@@ -246,10 +246,20 @@ async def keep_alive_runner():
         await asyncio.sleep(3600)  # Heartbeat loop checks in every hour
 
 async def main():
-    token = os.environ.get('DISCORD_TOKEN')
+    # This checks for BOTH names automatically so it never fails!
+    token = os.environ.get('TOKEN') or os.environ.get('DISCORD_TOKEN')
+    
     if not token:
-        print("CRITICAL ERROR: 'DISCORD_TOKEN' environment variable missing.")
+        print("CRITICAL ERROR: Neither 'TOKEN' nor 'DISCORD_TOKEN' was found in the environment variables.")
         return
+
+    print("Token found! Attempting to connect to Discord...")
+    # Start the Discord bot runtime
+    asyncio.create_task(bot.start(token))
+    
+    # Run the keepalive loop on the primary thread to lock the environment open
+    await keep_alive_runner()
+
 
     # Start the Discord bot runtime
     asyncio.create_task(bot.start(token))
